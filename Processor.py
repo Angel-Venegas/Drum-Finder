@@ -63,7 +63,7 @@ def do_command(command): # https://manual.audacityteam.org/man/scripting_referen
     print("Rcvd: <<< \n" + response)
     return response
 
-def detect_peaks(audio_file, threshold=0.9, min_distance=3000): # Finds all of the largest peaks in a song, threshold is the 
+def detect_peaks(audio_file, threshold=0.7, min_distance=3000): # Finds all of the largest peaks in a song, threshold is the 
     """Detect peaks in an audio file."""
     audio = AudioSegment.from_file(audio_file)
     
