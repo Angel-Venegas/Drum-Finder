@@ -1,3 +1,14 @@
+'''
+py --version
+
+Must be version 3.12
+Use a virtual environment
+
+py -3.12 -m venv venv
+venv\Scripts\activate
+
+'''
+
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
