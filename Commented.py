@@ -127,7 +127,7 @@ def do_command(command): # https://manual.audacityteam.org/man/scripting_referen
     print("Rcvd: <<< \n" + response)
     return response
 
-def detect_peaks(audio_file, threshold=0.9, min_distance=1000): # Finds all of the largest peaks in a song, threshold is the 
+def detect_peaks(audio_file, threshold=0.9, min_distance=1000): # Finds all of the largest peaks in a song using threshold for height and min_distance for the width of those peaks to br broken up into
     """Detect peaks in an audio file."""
     # Load the audio file
     audio = AudioSegment.from_file(audio_file)
@@ -136,10 +136,10 @@ def detect_peaks(audio_file, threshold=0.9, min_distance=1000): # Finds all of t
     samples = np.array(audio.get_array_of_samples())
     
     # Taking the absolute value of the samples' amplitudes since we want the highest value
-    samples = np.abs(samples) # A sample is piece of audio from the smallest possible measurement of amplitude (which means each sample is an amplitude from the smallest possible measurement of amplitude) stored on the computer.
+    samples = np.abs(samples) # A sample is a single measurement of an audio signal's amplitude (volume level) at a given point in time. (A single dot of audio with some loudness or amplitude)
 
     # Finds the maximum value in the array of absolute sample values. This maximum amplitude is used to set a threshold for detecting significant peaks.
-    # max_amplitude = np.max(samples)
+    # max_amplitude = np.max(samples) # The bottom calculates the threshold perfectly since it includes bit depth.
 
     # Calculate the bit depth and then find the highest possible positive amplitude value for the given bit depth
     # Bit depth tells a program how many bits are used to represent each sample in the audio signal. 
@@ -154,19 +154,19 @@ def detect_peaks(audio_file, threshold=0.9, min_distance=1000): # Finds all of t
     # This calculates the perfect threshold value based on the bitdepth
     threshold_value = threshold * max_amplitude 
 
-    # Identifys the candidate peaks that exceed the threshold value ([0] since a touple of one array is returned because our array of samples is only one dimension. If it was two dimensions then a touplew of two arrays would be returned.)
-    candidate_peaks = np.where(samples > threshold_value)[0] # Getting peaks that are larger than the threshold
+    # Identifys the threshold peaks that exceed the threshold value ([0] since a touple of one array is returned because our array of samples is only one dimension. If it was two dimensions then a touplew of two arrays would be returned.)
+    threshold_peaks = np.where(samples > threshold_value)[0] # Getting peaks that are larger than the threshold
 
     # Now that we have all of our largest peaks, we still have peak samples that are way too close too each other. The goal is to filter out the peaks such that any two peaks in the final list are at least min_distance samples apart.
     peaks = []
     last_peak = -min_distance # last_peak is initially set to -min_distance to ensure that the first candidate peak is always added to the peaks list, regardless of its position.
-    for peak in candidate_peaks: # Remember, each peak is an index (or index of a sample) and we want each current index to be some minimum number of indexes apart from the previous index
+    for peak in threshold_peaks: # Remember, each peak is an index (or index of a sample) and we want each current index to be some minimum number of indexes apart from the previous index
         if peak - last_peak > min_distance:
             peaks.append(peak)
             last_peak = peak
 
     # audio.frame_rate is just the sample rate of the audio. The frame rate allows for the conversion of sample indices to actual time values in seconds.
-    return peaks, audio.frame_rate
+    return peaks, audio.frame_rate # peaks are now atleast min_distance apart in the list, so, just singular peak samples that are at least min_distnace apart from each other
 
 def highlight_peaks(peaks, frame_rate): # Highlights peaks at some distance from the center and then applies a split
     """Highlight peaks in Audacity and split at each peak."""
@@ -185,10 +185,10 @@ def quick_test():
     
     do_command(f'Export2: Filename="{temp_wav}" NumChannels=1') # Exports the currently selected audio in audacity to the named file (in this case, the temporary file, this happens immediately). So it is telling audacity to do this with one audio channel.
     
-    # Detect peaks in the exported audio
-    peaks, frame_rate = detect_peaks(temp_wav)
+    # Largest peaks in the song with some distance aprat and audio frame rate
+    peaks, frame_rate = detect_peaks(temp_wav) # temp_wav is what ever audio is currently selected in audacity
     
-    # Highlight peaks in Audacity
+    # Selects peaks in Audacity by setting an interval equidistant apart from that biggest peak
     highlight_peaks(peaks, frame_rate)
     
     # Clean up temporary file
